@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ledgermem-pydantic-ai"
+version = "0.1.0"
+description = "LedgerMem adapter for Pydantic AI agents — registers search/add memory tools."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "LedgerMem", email = "founders@proofly.dev" }]
+keywords = ["ledgermem", "pydantic-ai", "memory", "rag", "agent"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+  "ledgermem>=0.1.0",
+  "pydantic-ai>=0.0.13",
+  "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.23",
+  "ruff>=0.6",
+  "mypy>=1.10",
+]
+
+[project.urls]
+Homepage = "https://github.com/ledgermem/ledgermem-pydantic-ai"
+Issues = "https://github.com/ledgermem/ledgermem-pydantic-ai/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ledgermem_pydantic_ai"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
