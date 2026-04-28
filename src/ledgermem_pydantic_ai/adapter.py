@@ -51,10 +51,33 @@ def with_memory(
             limit: Max results (defaults to the adapter's ``search_limit``).
         """
         deps = ctx.deps
-        results = await _maybe_await(
-            deps.ledgermem.search(query, limit=limit or search_limit)
+        # Resolve the limit defensively — `limit or search_limit` treated 0
+        # and negative numbers as "use default", which silently overrode
+        # whatever the model asked for. Clamp into [1, 50].
+        if limit is None or not isinstance(limit, int):
+            requested = search_limit
+        else:
+            requested = max(1, min(50, limit))
+        # Over-fetch so the post-retrieval user_id filter still leaves a
+        # full page of results. Without filtering by user_id, search would
+        # return memories that belong to OTHER users in the same workspace
+        # — a privacy leak that prompt-injection can trivially exploit.
+        fetch_limit = max(requested * 4, 20)
+        raw = await _maybe_await(
+            deps.ledgermem.search(query, limit=fetch_limit)
         )
-        return _coerce_results(results)
+        coerced = _coerce_results(raw)
+        out: list[dict[str, Any]] = []
+        for item in coerced:
+            metadata = item.get("metadata") or {}
+            if not isinstance(metadata, dict):
+                continue
+            if metadata.get("user_id") != deps.user_id:
+                continue
+            out.append(item)
+            if len(out) >= requested:
+                break
+        return out
 
     @agent.tool(name=add_name)
     async def _add(
