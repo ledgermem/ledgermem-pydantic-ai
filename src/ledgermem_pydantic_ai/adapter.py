@@ -69,10 +69,13 @@ def with_memory(
             metadata: Optional structured tags merged into the stored entry.
         """
         deps = ctx.deps
+        # Model-supplied metadata is merged FIRST so trusted server-controlled
+        # fields (user_id, extra_metadata) cannot be overwritten by the LLM
+        # via prompt injection.
         merged: dict[str, Any] = {
-            "user_id": deps.user_id,
-            **deps.extra_metadata,
             **(metadata or {}),
+            **deps.extra_metadata,
+            "user_id": deps.user_id,
         }
         memory = await _maybe_await(
             deps.ledgermem.add(content, metadata=merged)
