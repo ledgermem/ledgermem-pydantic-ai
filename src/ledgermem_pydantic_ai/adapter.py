@@ -68,11 +68,18 @@ def with_memory(
         )
         coerced = _coerce_results(raw)
         out: list[dict[str, Any]] = []
+        # Reject ambiguous ownership outright. If the adapter was constructed
+        # without a real user_id (None / "") we must NOT match memories whose
+        # stored ``user_id`` is also None — that pattern silently returns
+        # every legacy / unattributed memory to any caller missing deps.
+        if not deps.user_id:
+            return out
         for item in coerced:
             metadata = item.get("metadata") or {}
             if not isinstance(metadata, dict):
                 continue
-            if metadata.get("user_id") != deps.user_id:
+            stored_user_id = metadata.get("user_id")
+            if stored_user_id is None or stored_user_id != deps.user_id:
                 continue
             out.append(item)
             if len(out) >= requested:
