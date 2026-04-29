@@ -1,11 +1,11 @@
-"""Wire LedgerMem search/add into a Pydantic AI ``Agent`` as tools."""
+"""Wire Mnemo search/add into a Pydantic AI ``Agent`` as tools."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, TypeVar
 
-from ledgermem import LedgerMem
+from getmnemo import Mnemo
 from pydantic_ai import Agent, RunContext
 
 DepsT = TypeVar("DepsT", bound="MemoryDeps")
@@ -17,10 +17,10 @@ class MemoryDeps:
     """Per-run dependencies for the memory tools.
 
     Subclass this in your own ``Deps`` type if you want to carry additional
-    state — only ``ledgermem`` and ``user_id`` are read by the adapter.
+    state — only ``getmnemo`` and ``user_id`` are read by the adapter.
     """
 
-    ledgermem: LedgerMem
+    getmnemo: Mnemo
     user_id: str
     extra_metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -64,7 +64,7 @@ def with_memory(
         # — a privacy leak that prompt-injection can trivially exploit.
         fetch_limit = max(requested * 4, 20)
         raw = await _maybe_await(
-            deps.ledgermem.search(query, limit=fetch_limit)
+            deps.getmnemo.search(query, limit=fetch_limit)
         )
         coerced = _coerce_results(raw)
         out: list[dict[str, Any]] = []
@@ -108,7 +108,7 @@ def with_memory(
             "user_id": deps.user_id,
         }
         memory = await _maybe_await(
-            deps.ledgermem.add(content, metadata=merged)
+            deps.getmnemo.add(content, metadata=merged)
         )
         return _coerce_one(memory)
 
@@ -122,7 +122,7 @@ add_memory_tool = with_memory
 
 
 async def _maybe_await(value: Any) -> Any:
-    """Support both sync and async LedgerMem clients."""
+    """Support both sync and async Mnemo clients."""
     if hasattr(value, "__await__"):
         return await value
     return value

@@ -1,4 +1,4 @@
-"""LedgerMem adapter for Pydantic AI agents."""
+"""Mnemo adapter for Pydantic AI agents."""
 
 from .adapter import (
     MemoryDeps,

@@ -1,7 +1,7 @@
-"""Smoke tests for the LedgerMem Pydantic AI adapter.
+"""Smoke tests for the Mnemo Pydantic AI adapter.
 
 These tests exercise the public surface without making network calls — the
-LedgerMem client is replaced with a fake.
+Mnemo client is replaced with a fake.
 """
 
 from __future__ import annotations
@@ -11,10 +11,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ledgermem_pydantic_ai import MemoryDeps, with_memory
+from getmnemo_pydantic_ai import MemoryDeps, with_memory
 
 
-class FakeLedgerMem:
+class FakeMnemo:
     def __init__(self) -> None:
         self.search_calls: list[tuple[str, int]] = []
         self.add_calls: list[tuple[str, dict[str, Any]]] = []
@@ -29,11 +29,11 @@ class FakeLedgerMem:
 
 
 def test_memory_deps_dataclass_roundtrip() -> None:
-    fake = FakeLedgerMem()
-    deps = MemoryDeps(ledgermem=fake, user_id="u1", extra_metadata={"plan": "pro"})
+    fake = FakeMnemo()
+    deps = MemoryDeps(getmnemo=fake, user_id="u1", extra_metadata={"plan": "pro"})
     assert deps.user_id == "u1"
     assert deps.extra_metadata == {"plan": "pro"}
-    assert deps.ledgermem is fake
+    assert deps.getmnemo is fake
 
 
 def test_with_memory_registers_tools() -> None:
@@ -71,8 +71,8 @@ def test_with_memory_custom_names() -> None:
 
 
 @pytest.mark.asyncio
-async def test_search_tool_calls_ledgermem() -> None:
-    """The registered search tool delegates to ``LedgerMem.search``."""
+async def test_search_tool_calls_getmnemo() -> None:
+    """The registered search tool delegates to ``Mnemo.search``."""
     agent = MagicMock()
     captured: dict[str, Any] = {}
 
@@ -86,8 +86,8 @@ async def test_search_tool_calls_ledgermem() -> None:
     agent.tool = tool_decorator
     with_memory(agent, search_limit=3)
 
-    fake = FakeLedgerMem()
-    deps = MemoryDeps(ledgermem=fake, user_id="u1")
+    fake = FakeMnemo()
+    deps = MemoryDeps(getmnemo=fake, user_id="u1")
     ctx = MagicMock()
     ctx.deps = deps
 
@@ -111,9 +111,9 @@ async def test_add_tool_merges_metadata() -> None:
     agent.tool = tool_decorator
     with_memory(agent)
 
-    fake = FakeLedgerMem()
+    fake = FakeMnemo()
     deps = MemoryDeps(
-        ledgermem=fake, user_id="u1", extra_metadata={"plan": "pro"}
+        getmnemo=fake, user_id="u1", extra_metadata={"plan": "pro"}
     )
     ctx = MagicMock()
     ctx.deps = deps
