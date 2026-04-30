@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "getmnemo-pydantic-ai"
+name = "mnemo-pydantic-ai"
 version = "0.1.0"
 description = "Mnemo adapter for Pydantic AI agents — registers search/add memory tools."
 readme = "README.md"
